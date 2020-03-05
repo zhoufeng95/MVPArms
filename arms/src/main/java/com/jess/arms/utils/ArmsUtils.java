@@ -15,15 +15,13 @@
  */
 package com.jess.arms.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.RecyclerView;
+import android.os.Build;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.SpannedString;
@@ -35,11 +33,17 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.jess.arms.base.App;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.integration.AppManager;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * ================================================
@@ -189,8 +193,7 @@ public class ArmsUtils {
      */
     public static <T extends View> T findViewByName(Context context, View view, String viewName) {
         int id = getResources(context).getIdentifier(viewName, "id", context.getPackageName());
-        T v = (T) view.findViewById(id);
-        return v;
+        return view.findViewById(id);
     }
 
     /**
@@ -203,8 +206,7 @@ public class ArmsUtils {
      */
     public static <T extends View> T findViewByName(Context context, Activity activity, String viewName) {
         int id = getResources(context).getIdentifier(viewName, "id", context.getPackageName());
-        T v = (T) activity.findViewById(id);
-        return v;
+        return activity.findViewById(id);
     }
 
     /**
@@ -214,8 +216,7 @@ public class ArmsUtils {
      * @return
      */
     public static int findLayout(Context context, String layoutName) {
-        int id = getResources(context).getIdentifier(layoutName, "layout", context.getPackageName());
-        return id;
+        return getResources(context).getIdentifier(layoutName, "layout", context.getPackageName());
     }
 
     /**
@@ -233,6 +234,7 @@ public class ArmsUtils {
      *
      * @param string
      */
+    @SuppressLint("ShowToast")
     public static void makeText(Context context, String string) {
         if (mToast == null) {
             mToast = Toast.makeText(context, string, Toast.LENGTH_SHORT);
@@ -243,10 +245,10 @@ public class ArmsUtils {
 
     /**
      * 使用 {@link Snackbar} 显示文本消息
-     * Arms 已将 com.android.support:design 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
-     * 因为 Snackbar 在 com.android.support:design 库中, 所以如果框架使用者没有自行依赖 com.android.support:design
-     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.android.support:design 了
-     * 因为在 arms-autolayout 库中已经依赖有 com.android.support:design
+     * Arms 已将 com.google.android.material:material 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
+     * 因为 Snackbar 在 com.google.android.material:material 库中, 所以如果框架使用者没有自行依赖 com.google.android.material:material
+     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.google.android.material:material 了
+     * 因为在 arms-autolayout 库中已经依赖有 com.google.android.material:material
      *
      * @param text
      */
@@ -256,10 +258,10 @@ public class ArmsUtils {
 
     /**
      * 使用 {@link Snackbar} 长时间显示文本消息
-     * Arms 已将 com.android.support:design 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
-     * 因为 Snackbar 在 com.android.support:design 库中, 所以如果框架使用者没有自行依赖 com.android.support:design
-     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.android.support:design 了
-     * 因为在 arms-autolayout 库中已经依赖有 com.android.support:design
+     * Arms 已将 com.google.android.material:material 从依赖中移除 (目的是减小 Arms 体积, design 库中含有太多 View)
+     * 因为 Snackbar 在 com.google.android.material:material 库中, 所以如果框架使用者没有自行依赖 com.google.android.material:material
+     * Arms 则会使用 Toast 替代 Snackbar 显示信息, 如果框架使用者依赖了 arms-autolayout 库就不用依赖 com.google.android.material:material 了
+     * 因为在 arms-autolayout 库中已经依赖有 com.google.android.material:material
      *
      * @param text
      */
@@ -361,10 +363,7 @@ public class ArmsUtils {
     }
 
     public static boolean isEmpty(Object obj) {
-        if (obj == null) {
-            return true;
-        }
-        return false;
+        return obj == null;
     }
 
     /**
@@ -377,8 +376,13 @@ public class ArmsUtils {
     public static String encodeToMD5(String string) {
         byte[] hash = new byte[0];
         try {
-            hash = MessageDigest.getInstance("MD5").digest(
-                    string.getBytes("UTF-8"));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                hash = MessageDigest.getInstance("MD5").digest(
+                        string.getBytes(StandardCharsets.UTF_8));
+            } else {
+                hash = MessageDigest.getInstance("MD5").digest(
+                        string.getBytes("UTF-8"));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
